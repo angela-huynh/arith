@@ -1,0 +1,121 @@
+/*
+ *      ppmdiff.c
+ *      by Angela Huynh, 
+ *      Date: October 11, 2024
+ *      Assignment: arith
+ *
+ *      Compares two ppm images to determine how similar/different 
+ *      they are using the root mean square (RMS) difference.
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <pnm.h>
+#include <uarray2.h>
+
+
+int check_dimensions(Pnm_ppm image1, Pnm_ppm image2);
+double compute_rms(Pnm_ppm image1, Pnm_ppm image2, int width, int height);
+void close_files(FILE *file1, FILE *file2);
+
+int main(int argc, char *argv[])
+{
+        if (argc != 3) {
+                fprintf(stderr, "Usage: %s <image1.ppm> <image2.ppm>\n",
+                        argv[0]);
+                return 1;
+        }
+
+        FILE *file1 = strcmp(argv[1], "-") == 0 ? stdin : fopen(argv[1], "rb");
+        FILE *file2 = strcmp(argv[2], "-") == 0 ? stdin : fopen(argv[2], "rb");
+
+        if (!file1 || !file2) {
+                fprintf(stderr, "Error: Could not open input files.\n");
+                close_files(file1, file2);
+                return 1;
+        }
+
+        // Pnm_ppm image1 = Pnm_ppmread(file1, uarray2_methods_plain);
+        // Pnm_ppm image2 = Pnm_ppmread(file2, uarray2_methods_plain);
+        close_files(file1, file2);
+
+        if (!check_dimensions(image1, image2)) {
+                Pnm_ppmfree(&image1);
+                Pnm_ppmfree(&image2);
+                return 1;
+        }
+
+        int width = image1->width < image2->width ? image1->width : 
+                                                     image2->width;
+        int height = image1->height < image2->height ? image1->height : 
+                                                       image2->height;
+        double rms_error = compute_rms(image1, image2, width, height);
+
+        printf("%.4f\n", rms_error);
+
+        Pnm_ppmfree(&image1);
+        Pnm_ppmfree(&image2);
+        return 0;
+}
+
+/*
+ *      close_files
+ *      
+ */
+void close_files(FILE *file1, FILE *file2)
+{
+        if (file1 && file1 != stdin) {
+                fclose(file1);
+        }
+        if (file2 && file2 != stdin) {
+                fclose(file2);
+        }
+}
+
+/*
+ *      check_dimensions
+ *      
+ */
+int check_dimensions(Pnm_ppm image1, Pnm_ppm image2)
+{
+        int width1 = image1->width, height1 = image1->height;
+        int width2 = image2->width, height2 = image2->height;
+
+        if (abs(width1 - width2) > 1 || abs(height1 - height2) > 1) {
+                fprintf(stderr, 
+                        "Error: Image dimensions differ by more than 1.\n");
+                return 0;
+        }
+        return 1;
+}
+
+/*
+ *      compute_rms
+ *      
+ */
+double compute_rms(Pnm_ppm image1, Pnm_ppm image2, int width, int height)
+{
+        double rms_error = 0.0;
+
+        for (int i = 0; i < width; i++) {
+                for (int j = 0; j < height; j++) {
+                        struct Pnm_rgb *pixel1 = UArray2_at(image1->pixels, 
+                                                            i, j);
+                        struct Pnm_rgb *pixel2 = UArray2_at(image2->pixels, 
+                                                            i, j);
+                        
+                        double red_diff = (pixel1->red - pixel2->red) * 
+                                          (pixel1->red - pixel2->red);
+                        double green_diff = (pixel1->green - pixel2->green) * 
+                                            (pixel1->green - pixel2->green);
+                        double blue_diff = (pixel1->blue - pixel2->blue) * 
+                                           (pixel1->blue - pixel2->blue);
+                        
+                        rms_error += red_diff + green_diff + blue_diff;
+                }
+        }
+
+        return sqrt(rms_error / (3 * width * height));
+}
