@@ -22,7 +22,7 @@ LDFLAGS = -g -L/comp/40/build/lib -L/usr/sup/cii40/lib64
 
 # Libraries needed for linking
 # Includes libraries for PPM image handling and CII implementations
-LDLIBS = -lnetpbm -lcii40 -lm
+LDLIBS = -l40locality -lnetpbm -lcii40 -lm -lrt -larith40
 
 # Collect all .h files in your directory.
 # This way, you can never forget to add a local .h file in your dependencies.
@@ -42,8 +42,14 @@ all: ppmdiff
 ## Linking step (.o -> executable program)
 
 # Rule for building ppmdiff from its object files
-ppmdiff: ppmdiff.o
-	$(CC) $(LDFLAGS) ppmdiff.o -o ppmdiff $(LDLIBS)
+ppmdiff: ppmdiff.o uarray2b.o uarray2.o a2blocked.o a2plain.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+uarray2b.o: uarray2b.c uarray2b.h uarray2.o
+	$(CC) $(CFLAGS) -c uarray2b.c
+
+uarray2.o: uarray2.c uarray2.h
+	$(CC) $(CFLAGS) -c uarray2.c
 
 # Clean up the built files
 clean:

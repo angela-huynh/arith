@@ -1,6 +1,6 @@
 /*
  *      ppmdiff.c
- *      by Angela Huynh, 
+ *      by Angela Huynh, Zach Everett
  *      Date: October 11, 2024
  *      Assignment: arith
  *
@@ -13,7 +13,11 @@
 #include <string.h>
 #include <math.h>
 #include <pnm.h>
+#include <uarray2b.h>
 #include <uarray2.h>
+#include "a2methods.h"
+#include "a2blocked.h"
+#include "a2plain.h"
 
 
 int check_dimensions(Pnm_ppm image1, Pnm_ppm image2);
@@ -37,8 +41,9 @@ int main(int argc, char *argv[])
                 return 1;
         }
 
-        // Pnm_ppm image1 = Pnm_ppmread(file1, uarray2_methods_plain);
-        // Pnm_ppm image2 = Pnm_ppmread(file2, uarray2_methods_plain);
+        A2Methods_T methods = uarray2_methods_plain; 
+        Pnm_ppm image1 = Pnm_ppmread(file1, methods);
+        Pnm_ppm image2 = Pnm_ppmread(file2, methods);
         close_files(file1, file2);
 
         if (!check_dimensions(image1, image2)) {
