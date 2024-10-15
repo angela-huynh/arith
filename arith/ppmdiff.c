@@ -103,6 +103,7 @@ int check_dimensions(Pnm_ppm image1, Pnm_ppm image2)
 double compute_rms(Pnm_ppm image1, Pnm_ppm image2, int width, int height)
 {
         double rms_error = 0.0;
+        int denominator = image1->denominator;
 
         for (int i = 0; i < width; i++) {
                 for (int j = 0; j < height; j++) {
@@ -111,14 +112,17 @@ double compute_rms(Pnm_ppm image1, Pnm_ppm image2, int width, int height)
                         struct Pnm_rgb *pixel2 = UArray2_at(image2->pixels, 
                                                             i, j);
                         
-                        double red_diff = (pixel1->red - pixel2->red) * 
-                                          (pixel1->red - pixel2->red);
-                        double green_diff = (pixel1->green - pixel2->green) * 
-                                            (pixel1->green - pixel2->green);
-                        double blue_diff = (pixel1->blue - pixel2->blue) * 
-                                           (pixel1->blue - pixel2->blue);
+                        // Convert RGB values to floating-point values
+                        double red_diff = ((double)pixel1->red / denominator) - 
+                                          ((double)pixel2->red / denominator);
+                        double green_diff = ((double)pixel1->green / denominator) - 
+                                            ((double)pixel2->green / denominator);
+                        double blue_diff = ((double)pixel1->blue / denominator) - 
+                                           ((double)pixel2->blue / denominator);
                         
-                        rms_error += red_diff + green_diff + blue_diff;
+                        rms_error += red_diff * red_diff + 
+                                     green_diff * green_diff + 
+                                     blue_diff * blue_diff;
                 }
         }
 
