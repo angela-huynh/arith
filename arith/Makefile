@@ -31,7 +31,7 @@ INCLUDES = $(shell echo *.h)
 ############### Rules ###############
 
 # Default target: build the ppmdiff executable
-all: ppmdiff
+all: ppmdiff unit_test
 
 ## Compile step (.c files -> .o files)
 
@@ -50,6 +50,12 @@ uarray2b.o: uarray2b.c uarray2b.h uarray2.o
 
 uarray2.o: uarray2.c uarray2.h
 	$(CC) $(CFLAGS) -c uarray2.c
+
+compress40.o: compress40.c uarray2b.o uarray2.o a2blocked.o a2plain.o
+	$(CC) $(CFLAGS) -c compress40.c
+
+unit_test: unit_test.o compress40.o uarray2b.o uarray2.o a2blocked.o a2plain.o
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 # Clean up the built files
 clean:
